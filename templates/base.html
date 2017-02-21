@@ -13,7 +13,6 @@
   <meta name="viewport" content="width=device-width,, initial-scale=1">
   <!-- Will be replace the page title -->
   <title>{% block title %}Home{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
   <!-- Macro: `render paginate` -->
   {% macro render_pagination(pagination, endpoint) %}
     <nav>
@@ -64,8 +63,6 @@
         body_content
     {% endblock %}
   </div>
-  <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </body>
 </html>
 

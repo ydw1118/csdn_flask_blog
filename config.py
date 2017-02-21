@@ -15,6 +15,7 @@ class ProdConfig(Config):
 
 class Devconfig(Config):
     """Devlopment config class."""
+    SECRET_KEY = 'R32J1F'
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/{}'.format(DB_USERNAME, DB_PASSWORD, DB_HOSTNAME, DB_DATABASE)

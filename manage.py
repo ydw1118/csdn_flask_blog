@@ -5,6 +5,10 @@ import models
 from flask_migrate import Migrate, MigrateCommand
 from config import Devconfig
 from sqlalchemy import func
+import forms
+from forms import CommentForm
+from uuid import uuid4
+from datetime import datetime
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -49,16 +53,26 @@ def home(page=1):
     return render_template('home.html', posts=posts, recent=recent, top_tags=top_tags)
 
 
-@app.route('/post/<string:post_id>')
+@app.route('/post/<string:post_id>', methods=['GET', 'POST'])
 def post(post_id):
     """View function for post page"""
+    form = CommentForm()
+    if form.validate_on_submit():
+        new_comment = models.Comment(id=str(uuid4()), name=form.name.data)
+        new_comment.text = form.text.data
+        new_comment.date = datetime.now()
+        new_comment.post_id = post_id
+        db.session.add(new_comment)
+        db.session.commit()
     post = models.Post.query.get_or_404(post_id)
     tags = post.tags
-    comments = post.comments.order_by(Comment.date.desc()).all()
+    comments = post.comments.order_by(models.Comment.date.desc()).all()
     recent, top_tags = sidebar_data()
     return render_template(
         'post.html',
+        post=post,
         tags=tags,
+        form=form,
         comments=comments,
         recent=recent,
         top_tags=top_tags
