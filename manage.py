@@ -1,9 +1,10 @@
 from flask_script import Manager, Server, Shell
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 import models
 from flask_migrate import Migrate, MigrateCommand
 from config import Devconfig
+from sqlalchemy import func
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
@@ -13,13 +14,13 @@ app.config.from_object(Devconfig)
 
 #Init manager object via app object
 manager = Manager(app)
-migrate = Migrate(app, models.db)
+migrate = Migrate(app, db)
 
 def make_shell_context():
     '''
     Create a python Cli.
     '''
-    return dict(app=app, db=models.db, User=models.User, \
+    return dict(app=app, db=db, User=models.User, \
     Post=models.Post, Comment=models.Comment, Tag=models.Tag)
 
 #Create a new commands:Server
@@ -30,20 +31,20 @@ manager.add_command('db', MigrateCommand)
 def sidebar_data():
     """Set the sidebar function."""
     #Get post of recent
-    recent = models.Post.query.order_by(Post.publish_data.desc()).limit(5).all()
+    recent = models.Post.query.order_by(models.Post.publish_data.desc()).limit(5).all()
 
     top_tags = db.session.query(
-        Tag, func.count(posts_tags.c.post_id).label('total')
+        models.Tag, func.count(models.posts_tags.c.post_id).label('total')
     ).join(
-        posts_tags
-    ).group_by(Tag).order_by('total DESC').limit(5).all()
+        models.posts_tags
+    ).group_by(models.Tag).order_by('total DESC').limit(5).all()
     return recent, top_tags
 
 @app.route('/')
 @app.route('/<int:page>')
 def home(page=1):
     """View function for home page"""
-    posts = models.Post.query.order_by(Post.publish_data.desc()).paginate(page, 10)
+    posts = models.Post.query.order_by(models.Post.publish_data.desc()).paginate(page, 10)
     recent, top_tags = sidebar_data()
     return render_template('home.html', posts=posts, recent=recent, top_tags=top_tags)
 
